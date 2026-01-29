@@ -1,4 +1,4 @@
-# 📝 Rust Notes App
+udith# 📝 Rust Notes App
 
 A beautiful, full-featured notes application built in Rust with both command-line and web interfaces. Features colorful terminal output, persistent JSON storage, and a modern web interface.
 
@@ -35,7 +35,7 @@ A beautiful, full-featured notes application built in Rust with both command-lin
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/rust-notes-app.git
+git clone https://github.com/coderjudith/notes_app.git
 cd rust-notes-app
 
 # Build the project
@@ -43,3 +43,5 @@ cargo build
 
 # Or run directly
 cargo run
+or
+cargo run -- web
