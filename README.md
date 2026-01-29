@@ -1,4 +1,4 @@
-Judith# 📝 Rust Notes App
+📝 Rust Notes App
 
 A beautiful, full-featured notes application built in Rust with both command-line and web interfaces. Features colorful terminal output, persistent JSON storage, and a modern web interface.
 
