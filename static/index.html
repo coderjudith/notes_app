@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust Notes App</title>
+    <style>
+        /* ... all the CSS from before ... */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 Rust Notes App</h1>
+            <p>Your notes, beautifully organized and accessible anywhere</p>
+        </div>
+
+        <div class="app-container">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 Search notes...">
+                </div>
+                
+                <div class="form-group">
+                    <button class="btn btn-success" onclick="openCreateModal()" style="width: 100%;">
+                        ✏️ Create New Note
+                    </button>
+                </div>
+                
+                <div id="notesList">
+                    <div class="loading">Loading notes...</div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <div id="noteDetail" class="empty-state">
+                    <div>📝</div>
+                    <h3>Select a note to view details</h3>
+                    <p>Choose a note from the sidebar or create a new one</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div id="noteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Create New Note</h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            
+            <form id="noteForm" onsubmit="saveNote(event)">
+                <div class="form-group">
+                    <label for="noteTitle">Title</label>
+                    <input type="text" id="noteTitle" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="noteContent">Content</label>
+                    <textarea id="noteContent" class="form-control" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="noteTags">Tags (comma-separated)</label>
+                    <input type="text" id="noteTags" class="form-control" placeholder="work, personal, ideas">
+                </div>
+                
+                <div class="actions">
+                    <button type="submit" class="btn btn-success" id="saveBtn">Save Note</button>
+                    <button type="button" class="btn" onclick="closeModal()">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="deleteBtn" style="display: none;" onclick="deleteCurrentNote()">Delete Note</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentNoteId = null;
+        let notes = [];
+
+        // Fetch all notes
+        async function loadNotes() {
+            try {
+                const response = await fetch('/api/notes');
+                const result = await response.json();
+                
+                if (result.success) {
+                    notes = result.data;
+                    renderNotesList();
+                    if (notes.length > 0) {
+                        showNoteDetail(notes[0].id);
+                    } else {
+                        showEmptyState();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading notes:', error);
+            }
+        }
+
+        // Render notes list
+        function renderNotesList(filteredNotes = notes) {
+            const notesList = document.getElementById('notesList');
+            
+            if (filteredNotes.length === 0) {
+                notesList.innerHTML = `
+                    <div class="empty-state">
+                        <div>📭</div>
+                        <p>No notes found</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            notesList.innerHTML = filteredNotes.map(note => `
+                <div class="note-card ${currentNoteId === note.id ? 'active' : ''}" 
+                     onclick="showNoteDetail('${note.id}')">
+                    <h3>${escapeHtml(note.title)}</h3>
+                    <div class="tags">
+                        ${note.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+                    </div>
+                    <p>${escapeHtml(note.content.length > 100 ? note.content.substring(0, 100) + '...' : note.content)}</p>
+                    <div class="note-meta">
+                        <span>${formatDate(note.created_at)}</span>
+                        <span>${note.content.length} chars</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Show note details
+        async function showNoteDetail(noteId) {
+            try {
+                const response = await fetch(`/api/notes/${noteId}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const note = result.data;
+                    currentNoteId = note.id;
+                    
+                    const noteDetail = document.getElementById('noteDetail');
+                    noteDetail.innerHTML = `
+                        <div style="margin-bottom: 30px;">
+                            <h2 style="color: #2d3748; margin-bottom: 15px;">${escapeHtml(note.title)}</h2>
+                            <div class="tags" style="margin-bottom: 20px;">
+                                ${note.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+                            </div>
+                            <p style="white-space: pre-wrap; line-height: 1.6; color: #4a5568; margin-bottom: 20px;">
+                                ${escapeHtml(note.content)}
+                            </p>
+                            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                                <button class="btn" onclick="openEditModal()">✏️ Edit</button>
+                                <button class="btn btn-danger" onclick="deleteNote('${note.id}')">🗑️ Delete</button>
+                            </div>
+                            <div style="color: #a0aec0; font-size: 14px;">
+                                <div>Created: ${formatDate(note.created_at)}</div>
+                                <div>Updated: ${formatDate(note.updated_at)}</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    renderNotesList();
+                }
+            } catch (error) {
+                console.error('Error loading note:', error);
+            }
+        }
+
+        // Open create modal
+        function openCreateModal() {
+            document.getElementById('modalTitle').textContent = 'Create New Note';
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('noteContent').value = '';
+            document.getElementById('noteTags').value = '';
+            document.getElementById('deleteBtn').style.display = 'none';
+            document.getElementById('noteModal').classList.add('active');
+        }
+
+        // Open edit modal
+        function openEditModal() {
+            const note = notes.find(n => n.id === currentNoteId);
+            if (note) {
+                document.getElementById('modalTitle').textContent = 'Edit Note';
+                document.getElementById('noteTitle').value = note.title;
+                document.getElementById('noteContent').value = note.content;
+                document.getElementById('noteTags').value = note.tags.join(', ');
+                document.getElementById('deleteBtn').style.display = 'block';
+                document.getElementById('noteModal').classList.add('active');
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('noteModal').classList.remove('active');
+        }
+
+        // Save note (create or update)
+        async function saveNote(event) {
+            event.preventDefault();
+            
+            const noteData = {
+                title: document.getElementById('noteTitle').value,
+                content: document.getElementById('noteContent').value,
+                tags: document.getElementById('noteTags').value
+                    .split(',')
+                    .map(tag => tag.trim())
+                    .filter(tag => tag.length > 0)
+            };
+            
+            const url = currentNoteId ? `/api/notes/${currentNoteId}` : '/api/notes';
+            const method = currentNoteId ? 'PUT' : 'POST';
+            
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(noteData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    closeModal();
+                    loadNotes();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error saving note:', error);
+                alert('Failed to save note');
+            }
+        }
+
+        // Delete note
+        async function deleteNote(noteId) {
+            if (confirm('Are you sure you want to delete this note?')) {
+                try {
+                    const response = await fetch(`/api/notes/${noteId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        loadNotes();
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Error deleting note:', error);
+                }
+            }
+        }
+
+        // Delete current note from modal
+        function deleteCurrentNote() {
+            if (currentNoteId) {
+                deleteNote(currentNoteId);
+                closeModal();
+            }
+        }
+
+        // Search notes
+        function searchNotes() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (searchTerm.trim() === '') {
+                renderNotesList(notes);
+                return;
+            }
+            
+            const filteredNotes = notes.filter(note => 
+                note.title.toLowerCase().includes(searchTerm) ||
+                note.content.toLowerCase().includes(searchTerm) ||
+                note.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+            );
+            
+            renderNotesList(filteredNotes);
+        }
+
+        // Utility functions
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        }
+
+        function showEmptyState() {
+            const noteDetail = document.getElementById('noteDetail');
+            noteDetail.innerHTML = `
+                <div class="empty-state">
+                    <div>📝</div>
+                    <h3>No notes yet</h3>
+                    <p>Create your first note to get started!</p>
+                    <button class="btn btn-success" onclick="openCreateModal()" style="margin-top: 20px;">
+                        Create First Note
+                    </button>
+                </div>
+            `;
+        }
+
+        // Initialize
+        document.getElementById('searchInput').addEventListener('input', searchNotes);
+        loadNotes();
+    </script>
+</body>
+</html>
