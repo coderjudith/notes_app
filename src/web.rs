@@ -131,15 +131,64 @@ async fn search_notes(
 
 #[get("/")]
 async fn index() -> impl Responder {
-    let html_content = r#"<h1>Notes App</h1><p>API is running. Use /api/notes endpoints.</p>"#;
-    HttpResponse::Ok()
-        .content_type("text/html")
-        .body(html_content)
+    // Try to load from file first
+    match std::fs::read_to_string("static/index.html") {
+        Ok(html) => {
+            println!("✓ Loaded HTML from static/index.html");
+            HttpResponse::Ok().content_type("text/html").body(html)
+        }
+        Err(err) => {
+            println!("✗ Could not load static/index.html: {}", err);
+            // Fallback HTML
+            let fallback = r#"<!DOCTYPE html>
+<html>
+<head>
+    <title>Rust Notes App</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Rust Notes App</h1>
+        <p>Note: Could not load static/index.html file</p>
+        <p>API is running. Try these endpoints:</p>
+        <ul>
+            <li><a href="/api/notes">/api/notes</a> - List all notes</li>
+            <li><a href="/health">/health</a> - Health check</li>
+        </ul>
+    </div>
+</body>
+</html>"#;
+
+            HttpResponse::Ok().content_type("text/html").body(fallback)
+        }
+    }
 }
 
 #[get("/health")]
 async fn health_check() -> impl Responder {
     HttpResponse::Ok().json(ApiResponse::success("OK", "Server is running"))
+}
+
+// endpoint to get stats
+#[get("/api/stats")]
+async fn get_stats(manager: web::Data<SharedNotesManager>) -> impl Responder {
+    let mgr = manager.lock().unwrap();
+    let notes = mgr.list_notes();
+
+    let total_notes = notes.len();
+    let all_tags: Vec<String> = notes.into_iter().flat_map(|note| note.tags).collect();
+    let unique_tags: std::collections::HashSet<String> = all_tags.into_iter().collect();
+
+    let stats = serde_json::json!({
+        "total_notes": total_notes,
+        "total_tags": unique_tags.len(),
+        "last_updated": chrono::Local::now().to_rfc3339()
+    });
+
+    HttpResponse::Ok().json(ApiResponse::success(stats, "Stats retrieved"))
 }
 
 pub async fn start_web_server(manager: SharedNotesManager) {

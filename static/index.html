@@ -3,284 +3,1444 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rust Notes App</title>
+    <title>📝 Rust Notes | Professional Note-Taking App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ... all the CSS from before ... */
+        /* Modern Color Palette - Refined */
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --primary-light: #dbeafe;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --light-gray: #e2e8f0;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --gradient-primary: linear-gradient(135deg, var(--primary), var(--secondary));
+            --gradient-accent: linear-gradient(135deg, var(--accent), var(--success));
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Compact Header */
+        .header {
+            background: white;
+            padding: 1.5rem 2rem;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .logo-text p {
+            font-size: 0.875rem;
+            color: var(--gray);
+        }
+
+        .header-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--gradient-primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Enhanced Stats Grid - More Compact */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            max-width: 1400px;
+            margin: 2rem auto 3rem;
+            padding: 0 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            transition: var(--transition);
+            border: 1px solid var(--light-gray);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+        }
+
+        .stat-card:nth-child(2)::before {
+            background: var(--gradient-accent);
+        }
+
+        .stat-card:nth-child(3)::before {
+            background: linear-gradient(135deg, var(--success), var(--accent));
+        }
+
+        .stat-card:nth-child(4)::before {
+            background: linear-gradient(135deg, var(--warning), var(--danger));
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            min-width: 56px;
+            background: var(--gradient-primary);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.25);
+        }
+
+        .stat-card:nth-child(2) .stat-icon {
+            background: var(--gradient-accent);
+            box-shadow: 0 6px 16px rgba(6, 182, 212, 0.25);
+        }
+
+        .stat-card:nth-child(3) .stat-icon {
+            background: linear-gradient(135deg, var(--success), var(--accent));
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25);
+        }
+
+        .stat-card:nth-child(4) .stat-icon {
+            background: linear-gradient(135deg, var(--warning), var(--danger));
+            box-shadow: 0 6px 16px rgba(245, 158, 11, 0.25);
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-content h3 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .stat-content .count {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-trend {
+            font-size: 0.75rem;
+            color: var(--success);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 3rem;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            transition: var(--transition);
+            border: 1px solid var(--light-gray);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-xl);
+        }
+
+        .card-header {
+            padding: 1.5rem 2rem;
+            background: linear-gradient(135deg, var(--light), white);
+            border-bottom: 1px solid var(--light-gray);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-header-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-label-icon {
+            color: var(--primary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: var(--transition);
+            background: var(--light);
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: white;
+        }
+
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        /* Tags */
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .tag {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 0.375rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+        }
+
+        .tag-remove {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0.125rem;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            transition: var(--transition);
+        }
+
+        .tag-remove:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.875rem 1.75rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #dc2626);
+            color: white;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning), #d97706);
+            color: white;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            border-radius: 6px;
+        }
+
+        /* Search Bar */
+        .search-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 3rem;
+            border: 2px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--light);
+            transition: var(--transition);
+            font-family: inherit;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: white;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        /* Notes List */
+        .notes-list {
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .notes-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .notes-list::-webkit-scrollbar-track {
+            background: var(--light);
+            border-radius: 3px;
+        }
+
+        .notes-list::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        .notes-list::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        .note-card {
+            background: white;
+            border-left: 4px solid var(--primary);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+            border: 1px solid var(--light-gray);
+        }
+
+        .note-card:hover {
+            background: linear-gradient(135deg, #f8fafc, white);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+            border-left-color: var(--secondary);
+        }
+
+        .note-card.highlight {
+            border-left-color: var(--danger);
+            background: linear-gradient(135deg, #fef2f2, white);
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .note-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+        }
+
+        .note-content {
+            color: var(--dark);
+            line-height: 1.6;
+            margin: 1rem 0;
+            white-space: pre-wrap;
+            font-size: 1rem;
+        }
+
+        .note-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--light-gray);
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .note-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .note-tag {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .note-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Compact Footer */
+        .footer {
+            background: white;
+            padding: 2rem;
+            margin-top: 3rem;
+            border-top: 1px solid var(--light-gray);
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--gray);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .footer-tech {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tech-badge {
+            background: var(--light);
+            color: var(--gray);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid var(--light-gray);
+        }
+
+        .copyright {
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        /* Empty State & Loading */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--light-gray);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray);
+        }
+
+        .spinner {
+            border: 3px solid var(--light-gray);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modal & Toast (keep from previous) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-xl);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem 2rem;
+            background: var(--light);
+            border-bottom: 1px solid var(--light-gray);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--gray);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: var(--light-gray);
+            color: var(--dark);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .toast {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+            border-left: 3px solid var(--success);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+
+        .toast.warning {
+            border-left-color: var(--warning);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .logo {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                padding: 0 1rem;
+                margin: 1.5rem auto 2rem;
+            }
+            
+            .container {
+                padding: 0 1rem 2rem;
+            }
+            
+            .card-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            
+            .card-body {
+                padding: 1.5rem;
+            }
+            
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .footer-tech {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stat-card {
+                padding: 1.5rem;
+            }
+            
+            .stat-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 1.25rem;
+            }
+            
+            .stat-content .count {
+                font-size: 1.75rem;
+            }
+            
+            .main-layout {
+                gap: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📝 Rust Notes App</h1>
-            <p>Your notes, beautifully organized and accessible anywhere</p>
-        </div>
-
-        <div class="app-container">
-            <!-- Sidebar -->
-            <div class="sidebar">
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="🔍 Search notes...">
+    <!-- Compact Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-sticky-note"></i>
                 </div>
-                
-                <div class="form-group">
-                    <button class="btn btn-success" onclick="openCreateModal()" style="width: 100%;">
-                        ✏️ Create New Note
-                    </button>
-                </div>
-                
-                <div id="notesList">
-                    <div class="loading">Loading notes...</div>
+                <div class="logo-text">
+                    <h1>Rust Notes</h1>
+                    <p>Secure, fast note-taking</p>
                 </div>
             </div>
+            <div class="header-badge">
+                <i class="fas fa-bolt"></i>
+                <span>Powered by Rust 🦀</span>
+            </div>
+        </div>
+    </header>
 
-            <!-- Main Content -->
-            <div class="main-content">
-                <div id="noteDetail" class="empty-state">
-                    <div>📝</div>
-                    <h3>Select a note to view details</h3>
-                    <p>Choose a note from the sidebar or create a new one</p>
+    <!-- Statistics Grid -->
+    <div class="stats-grid">
+        <div class="stat-card" style="--order: 1">
+            <div class="stat-icon">
+                <i class="fas fa-sticky-note"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Total Notes</h3>
+                <div class="count" id="totalNotes">0</div>
+                <div class="stat-trend">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>Active</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card" style="--order: 2">
+            <div class="stat-icon">
+                <i class="fas fa-tags"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Unique Tags</h3>
+                <div class="count" id="totalTags">0</div>
+                <div class="stat-trend">
+                    <i class="fas fa-hashtag"></i>
+                    <span>Organized</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card" style="--order: 3">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Last Updated</h3>
+                <div class="count" id="lastUpdated">Just now</div>
+                <div class="stat-trend">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Live</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card" style="--order: 4">
+            <div class="stat-icon">
+                <i class="fas fa-database"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Storage</h3>
+                <div class="count" id="storageSize">0 KB</div>
+                <div class="stat-trend">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Efficient</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Create/Edit Modal -->
-    <div id="noteModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">Create New Note</h2>
-                <button class="close-btn" onclick="closeModal()">×</button>
+    <div class="container">
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Left Column: Create/Edit Note -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-header-icon">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <h2>Create & Edit Notes</h2>
+                    </div>
+                    <button class="btn btn-success btn-sm" id="clearFormBtn">
+                        <i class="fas fa-broom"></i> Clear
+                    </button>
+                </div>
+                <div class="card-body">
+                    <form id="noteForm">
+                        <div class="form-group">
+                            <label for="title" class="form-label">
+                                <i class="fas fa-heading form-label-icon"></i> Title
+                            </label>
+                            <input type="text" id="title" class="form-control" placeholder="Enter note title..." required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="content" class="form-label">
+                                <i class="fas fa-align-left form-label-icon"></i> Content
+                            </label>
+                            <textarea id="content" class="form-control" placeholder="Write your note here..." required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tagsInput" class="form-label">
+                                <i class="fas fa-tags form-label-icon"></i> Tags
+                            </label>
+                            <input type="text" id="tagsInput" class="form-control" placeholder="Type and press Enter to add tags">
+                            <div class="tags-container" id="tagsContainer">
+                                <!-- Tags will appear here -->
+                            </div>
+                        </div>
+                        
+                        <div class="form-group" style="display: flex; gap: 1rem; margin-top: 2rem;">
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-save"></i> Save Note
+                            </button>
+                            <button type="button" class="btn btn-danger" id="cancelEditBtn" style="display: none;">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            
-            <form id="noteForm" onsubmit="saveNote(event)">
-                <div class="form-group">
-                    <label for="noteTitle">Title</label>
-                    <input type="text" id="noteTitle" class="form-control" required>
+
+            <!-- Right Column: Notes List with Search -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-header-icon">
+                            <i class="fas fa-list"></i>
+                        </div>
+                        <h2>Your Notes</h2>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div class="search-container">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" id="searchInput" class="search-input" placeholder="Search notes...">
+                        </div>
+                        <button class="btn btn-warning btn-sm" id="refreshBtn">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
                 </div>
-                
-                <div class="form-group">
-                    <label for="noteContent">Content</label>
-                    <textarea id="noteContent" class="form-control" required></textarea>
+                <div class="card-body">
+                    <div class="notes-list" id="notesList">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading your notes...</p>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="form-group">
-                    <label for="noteTags">Tags (comma-separated)</label>
-                    <input type="text" id="noteTags" class="form-control" placeholder="work, personal, ideas">
-                </div>
-                
-                <div class="actions">
-                    <button type="submit" class="btn btn-success" id="saveBtn">Save Note</button>
-                    <button type="button" class="btn" onclick="closeModal()">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="deleteBtn" style="display: none;" onclick="deleteCurrentNote()">Delete Note</button>
-                </div>
-            </form>
+            </div>
         </div>
+
+        <!-- Compact Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="/api/notes" target="_blank">
+                        <i class="fas fa-code"></i> API
+                    </a>
+                    <a href="/health" target="_blank">
+                        <i class="fas fa-heartbeat"></i> Health
+                    </a>
+                    <a href="https://github.com/coderjudith" target="_blank">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                    <a href="https://rust-lang.org" target="_blank">
+                        <i class="fas fa-cog"></i> Rust
+                    </a>
+                </div>
+                
+                <div class="footer-tech">
+                    <div class="tech-badge">
+                        <i class="fas fa-shield-alt"></i> Secure
+                    </div>
+                    <div class="tech-badge">
+                        <i class="fas fa-bolt"></i> Fast
+                    </div>
+                    <div class="tech-badge">
+                        <i class="fas fa-save"></i> Auto-save
+                    </div>
+                </div>
+                
+                <div class="copyright">
+                    © 2024 Rust Notes App | Version 1.0.0
+                </div>
+            </div>
+        </footer>
     </div>
 
     <script>
-        let currentNoteId = null;
+        // Global state
         let notes = [];
+        let currentTags = [];
+        let editingNoteId = null;
+        let currentNoteInModal = null;
 
-        // Fetch all notes
+        // DOM Elements
+        const notesList = document.getElementById('notesList');
+        const totalNotesEl = document.getElementById('totalNotes');
+        const totalTagsEl = document.getElementById('totalTags');
+        const lastUpdatedEl = document.getElementById('lastUpdated');
+        const storageSizeEl = document.getElementById('storageSize');
+        const noteForm = document.getElementById('noteForm');
+        const titleInput = document.getElementById('title');
+        const contentInput = document.getElementById('content');
+        const tagsInput = document.getElementById('tagsInput');
+        const tagsContainer = document.getElementById('tagsContainer');
+        const searchInput = document.getElementById('searchInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const clearFormBtn = document.getElementById('clearFormBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const editModal = document.getElementById('editModal');
+        const editForm = document.getElementById('editForm');
+        const editTitle = document.getElementById('editTitle');
+        const editContent = document.getElementById('editContent');
+        const editTags = document.getElementById('editTags');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelModalBtn = document.getElementById('cancelModalBtn');
+        const deleteModalBtn = document.getElementById('deleteModalBtn');
+        const toast = document.getElementById('toast');
+        const toastIcon = document.getElementById('toastIcon');
+        const toastMessage = document.getElementById('toastMessage');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadNotes();
+            setupEventListeners();
+        });
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Form submission
+            noteForm.addEventListener('submit', handleSubmit);
+            
+            // Tags input
+            tagsInput.addEventListener('keydown', handleTagInput);
+            
+            // Search
+            searchInput.addEventListener('input', filterNotes);
+            
+            // Buttons
+            clearFormBtn.addEventListener('click', resetForm);
+            refreshBtn.addEventListener('click', loadNotes);
+            cancelEditBtn.addEventListener('click', resetForm);
+            
+            // Modal
+            closeModalBtn.addEventListener('click', closeModal);
+            cancelModalBtn.addEventListener('click', closeModal);
+            editForm.addEventListener('submit', handleEditSubmit);
+            deleteModalBtn.addEventListener('click', handleDeleteFromModal);
+            
+            // Auto-refresh every 30 seconds
+            setInterval(loadNotes, 30000);
+        }
+
+        // Load all notes
         async function loadNotes() {
             try {
-                const response = await fetch('/api/notes');
-                const result = await response.json();
+                notesList.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading your notes...</p>
+                    </div>
+                `;
                 
+                const response = await fetch('/api/notes');
+                if (!response.ok) throw new Error('Failed to fetch notes');
+                
+                const result = await response.json();
                 if (result.success) {
                     notes = result.data;
-                    renderNotesList();
-                    if (notes.length > 0) {
-                        showNoteDetail(notes[0].id);
-                    } else {
-                        showEmptyState();
-                    }
+                    renderNotes();
+                    updateStats();
+                    showToast('Notes refreshed successfully', 'success');
                 }
             } catch (error) {
                 console.error('Error loading notes:', error);
+                showError('Failed to load notes');
+                notesList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Connection Error</h3>
+                        <p>Failed to load notes. Please check your connection.</p>
+                    </div>
+                `;
             }
         }
 
         // Render notes list
-        function renderNotesList(filteredNotes = notes) {
-            const notesList = document.getElementById('notesList');
-            
+        function renderNotes(filteredNotes = notes) {
             if (filteredNotes.length === 0) {
                 notesList.innerHTML = `
                     <div class="empty-state">
-                        <div>📭</div>
-                        <p>No notes found</p>
+                        <i class="fas fa-sticky-note"></i>
+                        <h3>No notes found</h3>
+                        <p>Create your first note to get started!</p>
                     </div>
                 `;
                 return;
             }
-            
+
             notesList.innerHTML = filteredNotes.map(note => `
-                <div class="note-card ${currentNoteId === note.id ? 'active' : ''}" 
-                     onclick="showNoteDetail('${note.id}')">
-                    <h3>${escapeHtml(note.title)}</h3>
-                    <div class="tags">
-                        ${note.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+                <div class="note-card ${note.tags.includes('important') ? 'highlight' : ''}" data-id="${note.id}">
+                    <div class="note-header">
+                        <div>
+                            <h3 class="note-title">${escapeHtml(note.title)}</h3>
+                            <div class="note-tags">
+                                ${note.tags.map(tag => `
+                                    <span class="note-tag">${escapeHtml(tag)}</span>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="note-actions">
+                            <button class="btn btn-success btn-sm" onclick="openEditModal('${note.id}')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteNote('${note.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
-                    <p>${escapeHtml(note.content.length > 100 ? note.content.substring(0, 100) + '...' : note.content)}</p>
+                    <div class="note-content">${escapeHtml(note.content)}</div>
                     <div class="note-meta">
-                        <span>${formatDate(note.created_at)}</span>
-                        <span>${note.content.length} chars</span>
+                        <div>
+                            <i class="fas fa-calendar"></i>
+                            Created: ${formatDate(note.created_at)}
+                        </div>
+                        <div>
+                            <i class="fas fa-clock"></i>
+                            Updated: ${formatTimeAgo(note.updated_at)}
+                        </div>
+                        <div>
+                            <i class="fas fa-file-alt"></i>
+                            ${note.content.length} chars
+                        </div>
                     </div>
                 </div>
             `).join('');
         }
 
-        // Show note details
-        async function showNoteDetail(noteId) {
-            try {
-                const response = await fetch(`/api/notes/${noteId}`);
-                const result = await response.json();
-                
-                if (result.success) {
-                    const note = result.data;
-                    currentNoteId = note.id;
-                    
-                    const noteDetail = document.getElementById('noteDetail');
-                    noteDetail.innerHTML = `
-                        <div style="margin-bottom: 30px;">
-                            <h2 style="color: #2d3748; margin-bottom: 15px;">${escapeHtml(note.title)}</h2>
-                            <div class="tags" style="margin-bottom: 20px;">
-                                ${note.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
-                            </div>
-                            <p style="white-space: pre-wrap; line-height: 1.6; color: #4a5568; margin-bottom: 20px;">
-                                ${escapeHtml(note.content)}
-                            </p>
-                            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                                <button class="btn" onclick="openEditModal()">✏️ Edit</button>
-                                <button class="btn btn-danger" onclick="deleteNote('${note.id}')">🗑️ Delete</button>
-                            </div>
-                            <div style="color: #a0aec0; font-size: 14px;">
-                                <div>Created: ${formatDate(note.created_at)}</div>
-                                <div>Updated: ${formatDate(note.updated_at)}</div>
-                            </div>
-                        </div>
-                    `;
-                    
-                    renderNotesList();
-                }
-            } catch (error) {
-                console.error('Error loading note:', error);
+        // Update statistics
+        function updateStats() {
+            totalNotesEl.textContent = notes.length;
+            
+            // Count unique tags
+            const allTags = notes.flatMap(note => note.tags);
+            const uniqueTags = [...new Set(allTags)];
+            totalTagsEl.textContent = uniqueTags.length;
+            
+            // Update last updated time
+            if (notes.length > 0) {
+                const latestNote = notes.reduce((latest, note) => 
+                    new Date(note.updated_at) > new Date(latest.updated_at) ? note : latest
+                );
+                lastUpdatedEl.textContent = formatTimeAgo(latestNote.updated_at);
             }
+            
+            // Calculate storage size (estimate)
+            const jsonSize = JSON.stringify(notes).length;
+            storageSizeEl.textContent = `${(jsonSize / 1024).toFixed(1)} KB`;
         }
 
-        // Open create modal
-        function openCreateModal() {
-            document.getElementById('modalTitle').textContent = 'Create New Note';
-            document.getElementById('noteTitle').value = '';
-            document.getElementById('noteContent').value = '';
-            document.getElementById('noteTags').value = '';
-            document.getElementById('deleteBtn').style.display = 'none';
-            document.getElementById('noteModal').classList.add('active');
-        }
-
-        // Open edit modal
-        function openEditModal() {
-            const note = notes.find(n => n.id === currentNoteId);
-            if (note) {
-                document.getElementById('modalTitle').textContent = 'Edit Note';
-                document.getElementById('noteTitle').value = note.title;
-                document.getElementById('noteContent').value = note.content;
-                document.getElementById('noteTags').value = note.tags.join(', ');
-                document.getElementById('deleteBtn').style.display = 'block';
-                document.getElementById('noteModal').classList.add('active');
+        // Handle form submission
+        async function handleSubmit(e) {
+            e.preventDefault();
+            
+            const title = titleInput.value.trim();
+            const content = contentInput.value.trim();
+            
+            if (!title || !content) {
+                showError('Please fill in title and content');
+                return;
             }
-        }
-
-        // Close modal
-        function closeModal() {
-            document.getElementById('noteModal').classList.remove('active');
-        }
-
-        // Save note (create or update)
-        async function saveNote(event) {
-            event.preventDefault();
             
             const noteData = {
-                title: document.getElementById('noteTitle').value,
-                content: document.getElementById('noteContent').value,
-                tags: document.getElementById('noteTags').value
-                    .split(',')
-                    .map(tag => tag.trim())
-                    .filter(tag => tag.length > 0)
+                title,
+                content,
+                tags: currentTags
             };
             
-            const url = currentNoteId ? `/api/notes/${currentNoteId}` : '/api/notes';
-            const method = currentNoteId ? 'PUT' : 'POST';
-            
             try {
-                const response = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                let response;
+                let method;
+                let url;
+                
+                if (editingNoteId) {
+                    // Update existing note
+                    method = 'PUT';
+                    url = `/api/notes/${editingNoteId}`;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+                } else {
+                    // Create new note
+                    method = 'POST';
+                    url = '/api/notes';
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                }
+                
+                response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(noteData)
                 });
                 
                 const result = await response.json();
                 
                 if (result.success) {
-                    closeModal();
-                    loadNotes();
+                    showToast(
+                        editingNoteId ? 'Note updated successfully!' : 'Note created successfully!',
+                        'success'
+                    );
+                    resetForm();
+                    await loadNotes();
                 } else {
-                    alert('Error: ' + result.message);
+                    showError(result.message || 'Operation failed');
                 }
             } catch (error) {
                 console.error('Error saving note:', error);
-                alert('Failed to save note');
+                showError('Failed to save note');
+            } finally {
+                submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Note';
             }
         }
 
-        // Delete note
-        async function deleteNote(noteId) {
-            if (confirm('Are you sure you want to delete this note?')) {
-                try {
-                    const response = await fetch(`/api/notes/${noteId}`, {
-                        method: 'DELETE'
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        loadNotes();
-                    } else {
-                        alert('Error: ' + result.message);
-                    }
-                } catch (error) {
-                    console.error('Error deleting note:', error);
+        // Handle tag input
+        function handleTagInput(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const tag = tagsInput.value.trim();
+                if (tag && !currentTags.includes(tag)) {
+                    addTag(tag);
+                    tagsInput.value = '';
                 }
             }
         }
 
-        // Delete current note from modal
-        function deleteCurrentNote() {
-            if (currentNoteId) {
-                deleteNote(currentNoteId);
-                closeModal();
-            }
+        // Add tag
+        function addTag(tag) {
+            currentTags.push(tag);
+            renderTags();
         }
 
-        // Search notes
-        function searchNotes() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        // Remove tag
+        function removeTag(index) {
+            currentTags.splice(index, 1);
+            renderTags();
+        }
+
+        // Render tags
+        function renderTags() {
+            tagsContainer.innerHTML = currentTags.map((tag, index) => `
+                <div class="tag">
+                    ${escapeHtml(tag)}
+                    <button type="button" class="tag-remove" onclick="removeTag(${index})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Open edit modal
+        async function openEditModal(noteId) {
+            const note = notes.find(n => n.id === noteId);
+            if (!note) return;
             
-            if (searchTerm.trim() === '') {
-                renderNotesList(notes);
+            currentNoteInModal = note;
+            editTitle.value = note.title;
+            editContent.value = note.content;
+            editTags.value = note.tags.join(', ');
+            
+            editModal.classList.add('active');
+        }
+
+        // Close modal
+        function closeModal() {
+            editModal.classList.remove('active');
+            currentNoteInModal = null;
+        }
+
+        // Handle edit form submission
+        async function handleEditSubmit(e) {
+            e.preventDefault();
+            
+            const title = editTitle.value.trim();
+            const content = editContent.value.trim();
+            const tags = editTags.value.split(',')
+                .map(tag => tag.trim())
+                .filter(tag => tag.length > 0);
+            
+            if (!title || !content) {
+                showError('Please fill in title and content');
                 return;
             }
             
-            const filteredNotes = notes.filter(note => 
-                note.title.toLowerCase().includes(searchTerm) ||
-                note.content.toLowerCase().includes(searchTerm) ||
-                note.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+            try {
+                const response = await fetch(`/api/notes/${currentNoteInModal.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, content, tags })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Note updated successfully!', 'success');
+                    closeModal();
+                    await loadNotes();
+                } else {
+                    showError(result.message || 'Failed to update note');
+                }
+            } catch (error) {
+                console.error('Error updating note:', error);
+                showError('Failed to update note');
+            }
+        }
+
+        // Handle delete from modal
+        async function handleDeleteFromModal() {
+            if (!currentNoteInModal || !confirm(`Delete note "${currentNoteInModal.title}"?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/notes/${currentNoteInModal.id}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Note deleted successfully!', 'success');
+                    closeModal();
+                    await loadNotes();
+                } else {
+                    showError(result.message || 'Failed to delete note');
+                }
+            } catch (error) {
+                console.error('Error deleting note:', error);
+                showError('Failed to delete note');
+            }
+        }
+
+        // Delete note directly
+        async function deleteNote(noteId) {
+            const note = notes.find(n => n.id === noteId);
+            if (!note || !confirm(`Delete note "${note.title}"?`)) return;
+            
+            try {
+                const response = await fetch(`/api/notes/${noteId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Note deleted successfully!', 'success');
+                    await loadNotes();
+                } else {
+                    showError(result.message || 'Failed to delete note');
+                }
+            } catch (error) {
+                console.error('Error deleting note:', error);
+                showError('Failed to delete note');
+            }
+        }
+
+        // Filter notes based on search
+        function filterNotes() {
+            const query = searchInput.value.toLowerCase().trim();
+            if (!query) {
+                renderNotes(notes);
+                return;
+            }
+            
+            const filtered = notes.filter(note =>
+                note.title.toLowerCase().includes(query) ||
+                note.content.toLowerCase().includes(query) ||
+                note.tags.some(tag => tag.toLowerCase().includes(query))
             );
             
-            renderNotesList(filteredNotes);
+            renderNotes(filtered);
+        }
+
+        // Reset form
+        function resetForm() {
+            noteForm.reset();
+            currentTags = [];
+            renderTags();
+            editingNoteId = null;
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Note';
+            cancelEditBtn.style.display = 'none';
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            toast.className = `toast ${type}`;
+            toastIcon.className = type === 'success' 
+                ? 'fas fa-check-circle' 
+                : type === 'error' 
+                ? 'fas fa-exclamation-circle' 
+                : 'fas fa-info-circle';
+            
+            if (type === 'error') {
+                toast.classList.add('error');
+            } else if (type === 'warning') {
+                toast.classList.add('warning');
+            }
+            
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Show error
+        function showError(message) {
+            showToast(message, 'error');
         }
 
         // Utility functions
@@ -292,26 +1452,31 @@
 
         function formatDate(dateString) {
             const date = new Date(dateString);
-            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
 
-        function showEmptyState() {
-            const noteDetail = document.getElementById('noteDetail');
-            noteDetail.innerHTML = `
-                <div class="empty-state">
-                    <div>📝</div>
-                    <h3>No notes yet</h3>
-                    <p>Create your first note to get started!</p>
-                    <button class="btn btn-success" onclick="openCreateModal()" style="margin-top: 20px;">
-                        Create First Note
-                    </button>
-                </div>
-            `;
+        function formatTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
+            return `${Math.floor(diffMins / 1440)}d ago`;
         }
 
-        // Initialize
-        document.getElementById('searchInput').addEventListener('input', searchNotes);
-        loadNotes();
+        // Make functions available globally
+        window.openEditModal = openEditModal;
+        window.deleteNote = deleteNote;
+        window.removeTag = removeTag;
     </script>
 </body>
 </html>
