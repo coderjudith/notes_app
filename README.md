@@ -45,3 +45,5 @@ cargo build
 cargo run
 or
 cargo run -- web
+
+# Acess at http://localhost:8080/
